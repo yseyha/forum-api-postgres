@@ -54,7 +54,7 @@ exports.update = async (req, res) => {
     try {
         const { name, description, type } = req.body;
 
-        const oldGroup = await Group.findOne({ where: { id: req.params.grouId }});
+        const oldGroup = await Group.findOne({ where: { id: req.params.groupId }});
 
         if (oldGroup) {
             const newGroup = await oldGroup.update({ name, description, type });
@@ -77,7 +77,7 @@ exports.update = async (req, res) => {
 
 exports.remove = async (req, res) => {
     try {
-        const group = await Group.destroy({ where: { id: req.params.grouId } });
+        const group = await Group.destroy({ where: { id: req.params.groupId } });
 
         if(group) {
             res.status(200).json({
@@ -103,7 +103,7 @@ exports.list = async (req, res) => {
                 attributes: ['id', 'name', 'email']
             },
         };
-        const group = await Group.findAndCountAll();
+        const group = await Group.findAndCountAll(qurey2);
 
         if (group) {
             res.status(200).json({
@@ -121,14 +121,14 @@ exports.list = async (req, res) => {
 
 exports.joinGroup = async (req, res) => {
     try {
-        const { groupId } = req.body;
+        const { groupId } = req.params;
         const userId = req.user.id;
 
         if(!groupId) throw "Param groupId is required!";
 
         // Make sure group is not empty
         const groupExisted = await Group.findOne({ where: { id: groupId } });
-        if(!groupExisted) throw "Group is empty!";
+        if(!groupExisted) throw "Invalid group!";
 
         // Make sure user not joined in this group before
         const isJoined = await GroupMember.findOne({ where: { groupId, userId } });
