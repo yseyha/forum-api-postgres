@@ -8,7 +8,7 @@ const {
     read,
     update,
     remove,
-    list,
+    listGroupTopics,
     banTopic
 } = require('../controllers/topic');
 
@@ -19,7 +19,7 @@ router.post('/topic', authCheck, isGroupMember, create);
 router.put('/topic/:topicId', authCheck, topicOwner, update);
 router.delete('/topic/:topicId', authCheck, topicOwner, remove);
 router.get('/topic/:topicId', read);
-router.get('/topics', list);
+router.get('/topics/:groupId', listGroupTopics);
 
 router.put('/topic/ban/:topicId', authCheck, async (req, res, next) => {
     const topic = await Topic.findOne({ where: { id: req.params.topicId} });

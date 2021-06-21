@@ -95,15 +95,16 @@ exports.remove = async (req, res) => {
 
 exports.list = async (req, res) => {
     try {
-        let qureyEverything = { include: { all: true, nested: true }};
-        let qurey2 = { 
+        // let qureyEverything = { include: { all: true, nested: true }};
+        let qurey = { 
             where: { banned: false },
+            attributes: { exclude: ['userId'] },
             include: {
                 model: User,
                 attributes: ['id', 'name', 'email']
             },
         };
-        const group = await Group.findAndCountAll(qurey2);
+        const group = await Group.findAndCountAll(qurey);
 
         if (group) {
             res.status(200).json({
@@ -184,8 +185,8 @@ exports.listGroupMember = async (req, res) => {
         if (!groupId) throw "Missing params id!"
 
         const groupMembers = await GroupMember.findAndCountAll({ where: { groupId }});
-
-        if(groupMembers) {
+        console.log(groupMembers);
+        if(groupMembers || groupMembers.count > 0) {
             res.status(200).json({
                 success: true,
                 message: `Success.`,

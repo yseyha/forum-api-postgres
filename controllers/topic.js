@@ -1,3 +1,5 @@
+const User = require('../models').user;
+const Group = require('../models').group;
 const Topic = require('../models').topic;
 
 exports.create = async (req, res) => {
@@ -37,7 +39,21 @@ exports.read = async (req, res) => {
         const { topicId } = req.params;
         if(!topicId) throw "Missing topicId params!"
 
-        const topic = await Topic.findOne({ where: { id: topicId } });
+        const topic = await Topic.findOne({
+            where: { id: topicId, banned: false },
+            attributes: { exclude: ['groupId', 'userId'] },
+            include: [
+                {
+                    model: User,
+                    attributes: ['id', 'name', 'email']
+                },
+                {
+                    model: Group,
+                    attributes: ['id', 'name', 'description']
+                }
+            ]
+        });
+
         if(topic) {
             res.status(200).json({
                 success: true,
@@ -98,9 +114,32 @@ exports.remove = async (req, res) => {
     }
 }
 
-exports.list = async (req, res) => {
+exports.listGroupTopics = async (req, res) => {
     try {
-        
+        const { groupId } = req.params
+        if(!groupId) throw "Missing param groupId";
+
+        const groupTopics = await Topic.findAndCountAll({ 
+            where: { groupId, banned: false },
+            include: [
+                {
+                    model: User,
+                    attributes: ['id', 'name', 'email']
+                },
+                {
+                    model: Group,
+                    attributes: ['id', 'name', 'description']
+                }
+            ]
+            
+        });
+        if(groupTopics) {
+            res.status(200).json({
+                success: true,
+                message: "success.",
+                results: groupTopics
+            });
+        } else throw "Topic not found!"
     } catch (error) {
         console.log(error);
         res.status(400).send({ success: false, message: error });
